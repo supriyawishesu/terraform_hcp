@@ -1,0 +1,69 @@
+name: "Terraform"
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+  workflow_dispatch:
+    
+
+env:
+  TF_CLOUD_ORGANIZATION: "supriya"
+  TF_WORKSPACE: "dtcc_hcp"
+  ROOT_PATH: '${{ github.workspace }}/modules'
+
+
+jobs:
+  
+  terraform_plan:
+    name: 'Terraform plan'
+    runs-on: ubuntu-latest
+   
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v2
+    
+    - name: Debug Directory Contents
+      run: |
+        ls -l ${{ env.ROOT_PATH }}
+    
+
+
+    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+  
+    # Step to run Terraform commands for each module
+    - name: Terraform commands for Modules
+      run: |
+       cd ${{ env.ROOT_PATH }}/aws_secretengine
+       terraform init
+       terraform plan
+       terraform apply -auto-approve
+      working-directory: ${{ env.ROOT_PATH }}
+
+    - name: Terraform commands for Modules
+      run: |
+       cd ${{ env.ROOT_PATH }}/onboarding_module
+       terraform init
+       terraform plan
+       terraform apply -auto-approve
+      working-directory: ${{ env.ROOT_PATH }}
+
+    - name: Terraform commands for Modules
+      run: |
+       cd ${{ env.ROOT_PATH }}/vaultcluster
+       terraform init
+       terraform plan
+       terraform apply -auto-approve
+      working-directory: ${{ env.ROOT_PATH }}
